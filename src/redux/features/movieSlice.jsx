@@ -3,9 +3,14 @@ import { supabase } from "../../lib/supabase";
 
 // Helper function to get signed URL
 const getSignedUrl = async (path) => {
+  if (!path) return null;
+
+  // Extract filename whether it is a full URL or just the filename
+  const fileName = path.includes("/") ? path.split("/").pop() : path;
+
   const { data, error } = await supabase.storage
     .from("movie_posters")
-    .createSignedUrl(path, 604800); // 7 days
+    .createSignedUrl(fileName, 604800); // 7 days
 
   if (error) throw error;
   return data.signedUrl;
@@ -106,7 +111,7 @@ export const fetchMovies = createAsyncThunk(
     try {
       const offset = (page - 1) * limit;
 
-      // Get total count
+      // Get total row count
       const { count } = await supabase
         .from("movies")
         .select("*", { count: "exact", head: true });
@@ -120,7 +125,6 @@ export const fetchMovies = createAsyncThunk(
 
       if (fetchError) throw fetchError;
 
-      // Get signed URLs for all movie posters
       const moviesWithSignedUrls = await Promise.all(
         movies.map(async (movie) => {
           if (movie.poster_url) {
@@ -162,18 +166,21 @@ export const fetchMovie = createAsyncThunk("movies/fetchMovie", async (id) => {
 
     if (fetchError) throw fetchError;
 
-    if (movie.poster_url) {
-      try {
-        const fileName = movie.poster_url.split("/").pop();
-        const signedUrl = await getSignedUrl(fileName);
-        return { ...movie, poster_url: signedUrl };
-      } catch (error) {
-        console.error(`Failed to get signed URL for movie ${movie.id}:`, error);
-        return movie;
-      }
+    if (!movie || !movie.poster_url) {
+      return movie;
     }
 
-    return movie;
+    try {
+      const signedUrl = await getSignedUrl(movie.poster_url);
+      return {
+        ...movie,
+        poster_url: signedUrl,
+      };
+    } catch (error) {
+      console.error(`Failed to get signed URL for movie ${movie.id}:`, error);
+
+      return movie;
+    }
   } catch (error) {
     console.error("Failed to fetch movie:", error);
     throw error;
@@ -216,6 +223,8 @@ const movieSlice = createSlice({
       })
       .addCase(fetchMovie.pending, (state) => {
         state.status = "loading";
+        state.currentMovie = null;
+        state.error = null;
       })
       .addCase(fetchMovie.fulfilled, (state, action) => {
         state.status = "succeeded";
@@ -224,6 +233,7 @@ const movieSlice = createSlice({
       })
       .addCase(fetchMovie.rejected, (state, action) => {
         state.status = "failed";
+        state.currentMovie = null;
         state.error = action.error.message;
       })
       .addCase(addMovie.fulfilled, (state, action) => {

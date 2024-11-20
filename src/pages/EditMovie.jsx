@@ -3,8 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import MovieForm from "../components/MovieForm";
 import { fetchMovie, updateMovie } from "../redux/features/movieSlice";
-import { Loader2 } from "lucide-react";
 import SessionLoading from "../components/SessionLoading";
+import PageLayout from "../components/PageLayout";
 
 export default function EditMovie() {
   const { id } = useParams();
@@ -38,24 +38,25 @@ export default function EditMovie() {
 
   if (!movie) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <PageLayout title="Movie Not Found">
         <button
           onClick={() => navigate("/")}
           className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
         >
           Back to Movies
         </button>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <MovieForm
-      title="Edit Movie"
-      initialData={movie}
-      onSubmit={handleSubmit}
-      isSubmitting={isSubmitting}
-      submitButtonText={isSubmitting ? "Updating..." : "Update Movie"}
-    />
+    <PageLayout title="Edit">
+      <MovieForm
+        initialData={movie}
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+        submitButtonText={isSubmitting ? "Updating..." : "Update"}
+      />
+    </PageLayout>
   );
 }

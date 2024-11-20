@@ -6,6 +6,7 @@ import { fetchMovies } from "../redux/features/movieSlice";
 import { signOut } from "../redux/features/userSlice";
 import EmptyState from "../components/EmptyState";
 import SessionLoading from "../components/SessionLoading";
+import PageLayout from "../components/PageLayout";
 
 export default function MovieList() {
   const dispatch = useDispatch();
@@ -140,53 +141,39 @@ export default function MovieList() {
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-7xl pt-10 pb-60 mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center space-x-2">
-            <h1 className="text-5xl font-semibold text-white ">My movies</h1>
-            <Link to="/create" className="text-white">
-              <div className="w-6 h-6 rounded-full bg-white text-teal-900 flex items-center justify-center">
-                +
-              </div>
-            </Link>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-white hover:text-emerald-400 transition-colors flex gap-2"
+    <PageLayout
+      title="My movies"
+      showAddButton={true}
+      showLogout={true}
+      onLogout={handleLogout}
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 pt-20 ">
+        {movies.map((movie) => (
+          <Link
+            key={movie.id}
+            to={`/edit/${movie.id}`}
+            className="bg-[#092C39] rounded-lg overflow-hidden group hover:ring-2 hover:ring-emerald-400 transition-all"
           >
-            <p>Logout</p> <LogOut className="w-6 h-6" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {movies.map((movie) => (
-            <Link
-              key={movie.id}
-              to={`/edit/${movie.id}`}
-              className="bg-[#092C39] rounded-lg overflow-hidden group hover:ring-2 hover:ring-emerald-400 transition-all"
-            >
-              <div className="aspect-[3/4] relative">
-                <img
-                  src={movie.poster_url}
-                  alt={movie.title}
-                  className="w-full h-full object-fit"
-                />
-              </div>
-              <div className="p-4">
-                <h2 className="text-white font-semibold">{movie.title}</h2>
-                <p className="text-gray-400">{movie.publishing_year}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {totalPages > 1 && (
-          <div className="mt-8 flex justify-center space-x-4">
-            {renderPaginationButtons()}
-          </div>
-        )}
+            <div className="aspect-[3/4] relative">
+              <img
+                src={movie.poster_url}
+                alt={movie.title}
+                className="w-full h-full object-fit"
+              />
+            </div>
+            <div className="p-4">
+              <h2 className="text-white font-semibold">{movie.title}</h2>
+              <p className="text-gray-400">{movie.publishing_year}</p>
+            </div>
+          </Link>
+        ))}
       </div>
-    </div>
+
+      {totalPages > 1 && (
+        <div className=" flex justify-center space-x-4 py-40">
+          {renderPaginationButtons()}
+        </div>
+      )}
+    </PageLayout>
   );
 }

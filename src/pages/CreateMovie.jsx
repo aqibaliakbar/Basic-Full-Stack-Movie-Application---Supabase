@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-
 import MovieForm from "../components/MovieForm";
+
+import PageLayout from "../components/PageLayout";
 import { addMovie } from "../redux/features/movieSlice";
 
 export default function CreateMovie() {
@@ -23,11 +24,13 @@ export default function CreateMovie() {
   };
 
   return (
-    <MovieForm
-      title="Create a new movie"
-      onSubmit={handleSubmit}
-      isSubmitting={isSubmitting}
-      submitButtonText="Submit"
-    />
+    <PageLayout title="Create a new movie">
+      <MovieForm
+        initialData={null}
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+        submitButtonText={isSubmitting ? "Submitting..." : "Submit"}
+      />
+    </PageLayout>
   );
 }
